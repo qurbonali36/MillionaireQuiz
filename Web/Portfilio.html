@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Qurbonali Ergashev | Full Stack dasturchi portfolio</title>
+    <!-- Google Fonts va Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global CSS reset va custom cursor */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.2s;
+        }
+        /* Custom cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,215,0,0.8), rgba(255,100,0,0.6));
+            mix-blend-mode: difference;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s ease, width 0.2s, height 0.2s, background 0.2s;
+            box-shadow: 0 0 12px gold;
+            backdrop-filter: blur(2px);
+        }
+        .custom-cursor.hover {
+            width: 48px;
+            height: 48px;
+            background: radial-gradient(circle, #ff3366, #ff9933);
+            box-shadow: 0 0 20px fuchsia;
+            mix-blend-mode: normal;
+        }
+        /* Scroll bar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e1e2f; }
+        ::-webkit-scrollbar-thumb { background: #f0a500; border-radius: 10px; }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- EmailJS kutubxonasi -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+    // EmailJS sozlamalari (o'zingizning kalitlaringizni qo'ying!)
+    // Ro'yxatdan o'ting: https://www.emailjs.com/
+    // SERVICE_ID, TEMPLATE_ID, PUBLIC_KEY ni o'zgartiring.
+    const EMAILJS_SERVICE_ID = "service_your_service_id";    // O'zingizniki bilan almashtiring
+    const EMAILJS_TEMPLATE_ID = "template_your_template_id";
+    const EMAILJS_PUBLIC_KEY = "your_public_key";
+
+    // React komponentlari
+    const { useState, useEffect, useRef, createContext, useContext } = React;
+
+    // Theme context
+    const ThemeContext = createContext();
+
+    // Avatar SVG komponenti (interaktiv ko'z va og'iz)
+    const Avatar = ({ themeMode, emotion, eyePosition }) => {
+        // Kiyim ranglari: light (ko'k ko'ylak), dark (qora sviter), system (yashil)
+        const getOutfit = () => {
+            if (themeMode === 'light') return { shirt: '#3b82f6', pants: '#1e293b', shirtStyle: 'quyoshli koylak', accessory: '☀️' };
+            if (themeMode === 'dark') return { shirt: '#0f172a', pants: '#020617', shirtStyle: 'tungi sviter', accessory: '🌙' };
+            return { shirt: '#10b981', pants: '#064e3b', shirtStyle: 'system kiyim', accessory: '⚡' };
+        };
+        const outfit = getOutfit();
+
+        // Emotsiya bo'yicha og'iz path
+        const getMouth = () => {
+            if (emotion === 'happy') return "M 65 155 Q 75 170, 85 155";
+            if (emotion === 'excited') return "M 62 152 Q 75 175, 88 152";
+            return "M 65 155 Q 75 160, 85 155";
+        };
+        // Ko'z qorachiqlari pozitsiyasi (cheklangan radius)
+        const leftPupilX = Math.min(8, Math.max(-8, eyePosition.x * 6));
+        const leftPupilY = Math.min(6, Math.max(-6, eyePosition.y * 5));
+        const rightPupilX = Math.min(8, Math.max(-8, eyePosition.x * 6));
+        const rightPupilY = Math.min(6, Math.max(-6, eyePosition.y * 5));
+
+        return (
+            <svg width="220" height="300" viewBox="0 0 150 220" style={{ filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.3))" }}>
+                {/* Tana */}
+                <rect x="45" y="100" width="60" height="80" rx="15" fill={outfit.shirt} stroke="#333" strokeWidth="1.5" />
+                {/* Shim */}
+                <rect x="45" y="160" width="28" height="40" fill={outfit.pants} rx="5" />
+                <rect x="77" y="160" width="28" height="40" fill={outfit.pants} rx="5" />
+                {/* Bosh */}
+                <circle cx="75" cy="65" r="35" fill="#FFDAB9" stroke="#b97f44" strokeWidth="1.5" />
+                {/* Sochlar */}
+                <path d="M45 50 Q60 25, 90 28 Q105 35, 105 55 L98 50 Q90 40, 75 40 Q55 40, 48 55 Z" fill="#4a2c2c" />
+                {/* Ko'z oqlari */}
+                <circle cx="60" cy="62" r="8" fill="white" stroke="#333" strokeWidth="1" />
+                <circle cx="90" cy="62" r="8" fill="white" stroke="#333" strokeWidth="1" />
+                {/* Qorachiqlar */}
+                <circle cx={60 + leftPupilX} cy={62 + leftPupilY} r="4" fill="#111" />
+                <circle cx={90 + rightPupilX} cy={62 + rightPupilY} r="4" fill="#111" />
+                {/* Og'iz */}
+                <path d={getMouth()} stroke="#6b2e2e" strokeWidth="3" fill="none" strokeLinecap="round" />
+                {/* Qoshlar */}
+                <path d="M53 52 Q58 48, 66 51" stroke="#4a2c2c" strokeWidth="2" fill="none" />
+                <path d="M84 51 Q92 48, 97 52" stroke="#4a2c2c" strokeWidth="2" fill="none" />
+                {/* Aksessuar */}
+                <text x="110" y="30" fontSize="18">{outfit.accessory}</text>
+            </svg>
+        );
+    };
+
+    // Asosiy App
+    const App = () => {
+        // State lar
+        const [theme, setTheme] = useState('light'); // 'light', 'dark', 'system'
+        const [showIntro, setShowIntro] = useState(true);
+        const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+        const [avatarEmotion, setAvatarEmotion] = useState('neutral');
+        const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+        const [sendStatus, setSendStatus] = useState(null); // 'sending', 'success', null
+        const [rocketAnim, setRocketAnim] = useState(false);
+        const introTextRef = useRef(null);
+        const cursorRef = useRef(null);
+        
+        // Kursor track
+        useEffect(() => {
+            const moveCursor = (e) => {
+                setMousePos({ x: e.clientX, y: e.clientY });
+                if (cursorRef.current) {
+                    cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+                }
+            };
+            window.addEventListener('mousemove', moveCursor);
+            // Hover effekt uchun elementlar
+            const hoverables = document.querySelectorAll('button, a, input, textarea, .project-card, .contact-icon');
+            const addHover = () => cursorRef.current?.classList.add('hover');
+            const removeHover = () => cursorRef.current?.classList.remove('hover');
+            hoverables.forEach(el => {
+                el.addEventListener('mouseenter', addHover);
+                el.addEventListener('mouseleave', removeHover);
+            });
+            return () => {
+                window.removeEventListener('mousemove', moveCursor);
+                hoverables.forEach(el => {
+                    el.removeEventListener('mouseenter', addHover);
+                    el.removeEventListener('mouseleave', removeHover);
+                });
+            };
+        }, []);
+        
+        // Avatar ko'z harakati uchun (normalized -1...1)
+        const getEyeOffset = () => {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            let dx = (mousePos.x - centerX) / (window.innerWidth / 2);
+            let dy = (mousePos.y - centerY) / (window.innerHeight / 2);
+            dx = Math.min(0.8, Math.max(-0.8, dx));
+            dy = Math.min(0.6, Math.max(-0.6, dy));
+            return { x: dx, y: dy };
+        };
+        
+        // Emotsiyani kursor qayerda turganiga qarab o'zgartirish
+        useEffect(() => {
+            const handleMouseOver = (e) => {
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.contact-card')) {
+                    setAvatarEmotion('excited');
+                } else if (e.target.closest('input, textarea')) {
+                    setAvatarEmotion('happy');
+                } else {
+                    setAvatarEmotion('neutral');
+                }
+            };
+            window.addEventListener('mouseover', handleMouseOver);
+            return () => window.removeEventListener('mouseover', handleMouseOver);
+        }, []);
+        
+        // System theme detection
+        useEffect(() => {
+            if (theme === 'system') {
+                const darkModeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+                const updateSystemTheme = () => {
+                    if (darkModeMedia.matches) setTheme('dark');
+                    else setTheme('light');
+                };
+                updateSystemTheme();
+                darkModeMedia.addEventListener('change', updateSystemTheme);
+                return () => darkModeMedia.removeEventListener('change', updateSystemTheme);
+            }
+        }, [theme]);
+        
+        // Body classni o'zgartirish
+        useEffect(() => {
+            const root = document.body;
+            if (theme === 'light') {
+                root.style.backgroundColor = '#fff9f0';
+                root.style.color = '#1f2937';
+            } else {
+                root.style.backgroundColor = '#0a0c10';
+                root.style.color = '#e2e8f0';
+            }
+        }, [theme]);
+        
+        const handleThemeChange = (mode) => {
+            if (mode === 'system') setTheme('system');
+            else setTheme(mode);
+        };
+        
+        // Form submit (EmailJS)
+        const sendEmail = async (e) => {
+            e.preventDefault();
+            if (!formData.name || !formData.email || !formData.message) {
+                alert("Iltimos, barcha maydonlarni to‘ldiring!");
+                return;
+            }
+            setSendStatus('sending');
+            setRocketAnim(true);
+            setTimeout(() => setRocketAnim(false), 1500);
+            
+            try {
+                // EmailJS mavjud bo'lsa ishlatilsin, aks holda simulyatsiya
+                if (EMAILJS_PUBLIC_KEY !== "your_public_key") {
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        from_name: formData.name,
+                        from_email: formData.email,
+                        message: formData.message,
+                        to_name: "Qurbonali",
+                    }, EMAILJS_PUBLIC_KEY);
+                } else {
+                    // Demo simulyatsiya
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    console.log("Xabar jo'natildi:", formData);
+                }
+                setSendStatus('success');
+                setFormData({ name: '', email: '', message: '' });
+                setTimeout(() => setSendStatus(null), 3000);
+            } catch (error) {
+                console.error(error);
+                alert("Xatolik yuz berdi. Qaytadan urinib ko‘ring.");
+                setSendStatus(null);
+            }
+        };
+        
+        // Intro dialog
+        if (showIntro) {
+            return (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'radial-gradient(circle at center, #1e1b2e, #030014)',
+                    zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', backdropFilter: 'blur(10px)'
+                }}>
+                    <div style={{ textAlign: 'center', maxWidth: '500px', padding: '2rem', animation: 'fadeInUp 0.8s' }}>
+                        <Avatar themeMode="light" emotion="happy" eyePosition={{ x: 0, y: 0 }} />
+                        <div style={{ background: 'rgba(0,0,0,0.7)', borderRadius: '30px', padding: '1.5rem', marginTop: '20px' }}>
+                            <p style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>👋 Assalomu alaykum!</p>
+                            <p>Men <strong>Qurbonali Ergashev</strong>, 16 yoshli Full Stack dasturchi. 
+                            Frontend (React, HTML, CSS) va Backend (Python, Django, AI, Telegram botlar) sohalarida ishlayman.
+                            Yashash joyim: <strong>Farg‘ona, Sux tuman, Qizilqiyoq MFY</strong>. 
+                            Murojaat uchun: <strong>+998 99 033 59 41</strong> yoki <strong>qurbonaliergashev0@gmail.com</strong>.</p>
+                            <button onClick={() => setShowIntro(false)} style={{
+                                marginTop: '20px', padding: '12px 28px', fontSize: '1.2rem',
+                                background: 'linear-gradient(45deg, #f0a500, #ff5e00)', border: 'none',
+                                borderRadius: '40px', color: 'white', fontWeight: 'bold', cursor: 'pointer',
+                                transition: '0.2s', boxShadow: '0 0 15px gold'
+                            }} onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
+                            onMouseOut={e => e.target.style.transform = 'scale(1)'}>
+                                🚀 Saytga o‘tish
+                            </button>
+                        </div>
+                    </div>
+                    <style>{`
+                        @keyframes fadeInUp {
+                            from { opacity: 0; transform: translateY(30px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                    `}</style>
+                </div>
+            );
+        }
+        
+        return (
+            <ThemeContext.Provider value={{ theme, setTheme }}>
+                <div style={{ position: 'relative', minHeight: '100vh', padding: '20px', overflowX: 'hidden' }}>
+                    {/* Custom kursor elementi */}
+                    <div className="custom-cursor" ref={cursorRef}></div>
+                    
+                    {/* Rejim tugmalari */}
+                    <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 100, display: 'flex', gap: '12px' }}>
+                        <button onClick={() => handleThemeChange('light')} style={themeBtnStyle(theme === 'light')}><i className="fas fa-sun"></i> Kunduz</button>
+                        <button onClick={() => handleThemeChange('dark')} style={themeBtnStyle(theme === 'dark')}><i className="fas fa-moon"></i> Kecha</button>
+                        <button onClick={() => handleThemeChange('system')} style={themeBtnStyle(theme === 'system')}><i className="fas fa-desktop"></i> Qurilma</button>
+                    </div>
+                    
+                    {/* Asosiy kontent */}
+                    <div style={{ maxWidth: '1300px', margin: '0 auto', paddingTop: '80px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', justifyContent: 'center', alignItems: 'center' }}>
+                            <div style={{ flex: '1', minWidth: '250px', textAlign: 'center' }}>
+                                <Avatar themeMode={theme} emotion={avatarEmotion} eyePosition={getEyeOffset()} />
+                                <p style={{ marginTop: '12px', fontSize: '0.9rem', opacity: 0.8 }}><i className="fas fa-eye"></i> Ko'zlarim kuzatib turadi...</p>
+                            </div>
+                            <div style={{ flex: '2', minWidth: '280px' }}>
+                                <h1 style={{ fontSize: '3rem', background: 'linear-gradient(135deg, #f0a500, #ff5e62)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+                                    Qurbonali Ergashev
+                                </h1>
+                                <p style={{ fontSize: '1.2rem' }}>⚡ Full Stack dasturchi | 16 yosh | Innovator</p>
+                                <div style={{ marginTop: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                    <InfoBadge icon="fas fa-calendar-alt" text="Tug'ilgan: 2010.11.03" />
+                                    <InfoBadge icon="fas fa-map-marker-alt" text="Farg'ona, O‘zbekiston" />
+                                    <InfoBadge icon="fas fa-code" text="Frontend: React, HTML/CSS" />
+                                    <InfoBadge icon="fas fa-database" text="Backend: Python, Django, AI" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Loyihalar */}
+                        <h2 style={{ fontSize: '2.2rem', margin: '60px 0 30px', textAlign: 'center' }}><i className="fas fa-rocket"></i> Asosiy loyihalarim</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
+                            <ProjectCard title="Qizilqiyoq MFY Sayti" tech="React, Netlify" link="https://qizilqiyoq.netlify.app/" desc="Mahalliy fuqarolar yig‘ini uchun zamonaviy web-sayt" />
+                            <ProjectCard title="Umar All Forukh Bot" tech="Python, Aiogram" link="https://t.me/Umar_all_ForukhBot" desc="Foydali funksiyalarga ega Telegram bot" />
+                            <ProjectCard title="Word Checker Bot" tech="Python, Regex" link="https://t.me/Word_checker_bot" desc="So‘z va matn tekshiruvchi bot" />
+                            <ProjectCard title="AI Code Assistant (demo)" tech="OpenAI API, React" link="#" desc="Sun'iy intellekt yordamida kod yozish" />
+                            <ProjectCard title="Portfolio Generator" tech="React, Three.js" link="#" desc="3D interaktiv portfolio generator" />
+                        </div>
+                        
+                        {/* Aloqa va kontakt */}
+                        <h2 style={{ fontSize: '2.2rem', margin: '60px 0 20px', textAlign: 'center' }}>📬 Bog‘lanish</h2>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', justifyContent: 'center' }}>
+                            <ContactCard icon="fab fa-telegram" label="Telegram" value="@Hello0102Q1" link="https://t.me/Hello0102Q1" />
+                            <ContactCard icon="fab fa-instagram" label="Instagram" value="ergashev_qurbonali_10" link="https://instagram.com/ergashev_qurbonali_10" />
+                            <ContactCard icon="fab fa-github" label="GitHub" value="qurbonaliergashev36-ui" link="https://github.com/qurbonaliergashev36-ui" />
+                            <ContactCard icon="fas fa-phone-alt" label="Telefon" value="+998 99 033 59 41" link="tel:+998990335941" />
+                            <ContactCard icon="fas fa-envelope" label="Email" value="qurbonaliergashev0@gmail.com" link="mailto:qurbonaliergashev0@gmail.com" />
+                            <ContactCard icon="fas fa-map-pin" label="Manzil" value="Google Mapsda ochish" link="https://maps.app.goo.gl/egC8aEMwkD4W1AQE8" isMap />
+                        </div>
+                        
+                        {/* Menga yozish formasi */}
+                        <div style={{ background: theme === 'light' ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', borderRadius: '50px', padding: '40px', margin: '60px 0', backdropFilter: 'blur(8px)' }}>
+                            <h3 style={{ textAlign: 'center', fontSize: '2rem' }}>✍️ Menga xabar yozing</h3>
+                            <form onSubmit={sendEmail} style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <input type="text" placeholder="Ismingiz" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required style={inputStyle(theme)} />
+                                <input type="email" placeholder="Email manzilingiz" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required style={inputStyle(theme)} />
+                                <textarea rows="5" placeholder="Xabar matni..." value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} required style={inputStyle(theme)}></textarea>
+                                <button type="submit" style={submitBtnStyle} disabled={sendStatus === 'sending'}>
+                                    {rocketAnim ? <i className="fas fa-rocket fa-spin"></i> : <i className="fas fa-paper-plane"></i>} 
+                                    {sendStatus === 'sending' ? " Yuborilmoqda..." : " Xabarni jo‘natish"}
+                                </button>
+                                {sendStatus === 'success' && <div style={{ textAlign: 'center', color: '#00e676', animation: 'fadeOut 2s forwards' }}>✅ Xabar muvaffaqiyatli yuborildi! Raketa orbitaga chiqdi 🚀</div>}
+                            </form>
+                        </div>
+                        <footer style={{ textAlign: 'center', padding: '30px', opacity: 0.7 }}>© 2026 Qurbonali Ergashev — Full Stack dasturchi. Barcha effektlar real vaqtda.</footer>
+                    </div>
+                    <style>{`
+                        @keyframes fadeOut {
+                            0% { opacity: 1; transform: scale(1);}
+                            80% { opacity: 1; }
+                            100% { opacity: 0; display: none; }
+                        }
+                        button, a, .contact-card, .project-card { transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+                        button:hover, .contact-card:hover, .project-card:hover { transform: translateY(-8px) scale(1.02); filter: drop-shadow(0 15px 20px rgba(0,0,0,0.3)); }
+                    `}</style>
+                </div>
+            </ThemeContext.Provider>
+        );
+    };
+    
+    // Yordamchi komponentlar
+    const InfoBadge = ({ icon, text }) => (
+        <div style={{ background: 'rgba(255,165,0,0.15)', borderRadius: '40px', padding: '8px 20px', display: 'inline-flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(4px)' }}>
+            <i className={icon}></i> <span>{text}</span>
+        </div>
+    );
+    
+    const ProjectCard = ({ title, tech, link, desc }) => (
+        <a href={link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="project-card" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '30px', padding: '1.5rem', border: '1px solid gold', transition: '0.3s' }}>
+                <h3><i className="fas fa-code-branch"></i> {title}</h3>
+                <p style={{ fontWeight: 'bold', color: '#f0a500' }}>{tech}</p>
+                <p>{desc}</p>
+                <span style={{ fontSize: '0.8rem' }}>🔗 Havola →</span>
+            </div>
+        </a>
+    );
+    
+    const ContactCard = ({ icon, label, value, link, isMap }) => (
+        <a href={link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="contact-card" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '40px', padding: '15px 25px', textAlign: 'center', minWidth: '150px', backdropFilter: 'blur(4px)' }}>
+                <i className={icon} style={{ fontSize: '2rem', color: '#f0a500' }}></i>
+                <p><strong>{label}</strong></p>
+                <p style={{ fontSize: '0.8rem', wordBreak: 'break-word' }}>{value}</p>
+            </div>
+        </a>
+    );
+    
+    const themeBtnStyle = (isActive) => ({
+        background: isActive ? '#f0a500' : 'rgba(0,0,0,0.5)',
+        border: 'none',
+        padding: '8px 18px',
+        borderRadius: '40px',
+        color: isActive ? '#000' : '#fff',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        backdropFilter: 'blur(8px)',
+        transition: '0.2s',
+        boxShadow: isActive ? '0 0 12px gold' : 'none'
+    });
+    
+    const inputStyle = (themeMode) => ({
+        padding: '14px 20px',
+        borderRadius: '60px',
+        border: `1px solid ${themeMode === 'light' ? '#ccc' : '#444'}`,
+        background: themeMode === 'light' ? 'white' : '#1e1e2f',
+        color: themeMode === 'light' ? '#000' : '#fff',
+        fontSize: '1rem',
+        outline: 'none',
+        transition: '0.2s'
+    });
+    
+    const submitBtnStyle = {
+        background: 'linear-gradient(95deg, #f0a500, #ff7e05)',
+        border: 'none',
+        padding: '14px',
+        borderRadius: '60px',
+        fontSize: '1.2rem',
+        fontWeight: 'bold',
+        color: 'white',
+        cursor: 'pointer',
+        transition: '0.2s',
+        boxShadow: '0 5px 15px rgba(240,165,0,0.4)'
+    };
+    
+    // React DOM render
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

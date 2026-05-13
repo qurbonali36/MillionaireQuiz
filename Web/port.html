@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Qurbonali Ergashev | Full Stack Portfolio</title>
+    <style>
+        /* Reset & Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none; /* Custom cursor */
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            overflow-x: hidden;
+            background: #0a0f1e;
+            transition: background-color 0.4s ease, color 0.3s ease;
+        }
+
+        /* Custom Cursor */
+        .custom-cursor {
+            width: 28px;
+            height: 28px;
+            border: 2px solid rgba(100, 200, 255, 0.8);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(4px);
+            background: rgba(100, 200, 255, 0.15);
+            box-shadow: 0 0 12px cyan;
+        }
+
+        .custom-cursor.hover {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 255, 255, 0.3);
+            border-color: #ffd966;
+            mix-blend-mode: difference;
+        }
+
+        /* Canvas 3D background */
+        .canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            outline: none;
+        }
+
+        /* Main content overlay */
+        .content {
+            position: relative;
+            z-index: 10;
+            color: #fff;
+            backdrop-filter: blur(2px);
+            pointer-events: auto;
+        }
+
+        /* Scroll styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(30,30,50,0.6);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+
+        /* Theme variables (dynamic) */
+        :root {
+            --bg-glass: rgba(15, 25, 45, 0.65);
+            --card-bg: rgba(20, 30, 55, 0.7);
+            --text-primary: #f0f3fa;
+            --accent: #3b82f6;
+            --accent-glow: #00a6ff;
+            --border-light: rgba(255,255,255,0.2);
+        }
+
+        body.day-mode {
+            --bg-glass: rgba(200, 220, 255, 0.4);
+            --card-bg: rgba(245, 248, 255, 0.75);
+            --text-primary: #0f172a;
+            --accent: #2563eb;
+            --border-light: rgba(0,0,0,0.1);
+        }
+        body.evening-mode {
+            --bg-glass: rgba(30, 20, 55, 0.75);
+            --card-bg: rgba(40, 30, 65, 0.8);
+            --text-primary: #f5e9ff;
+            --accent: #c084fc;
+            --border-light: rgba(255,200,255,0.2);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Mode Toggle Buttons */
+        .mode-bar {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-light);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+        .mode-btn:hover {
+            transform: scale(1.05);
+            background: var(--accent);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Story Modal (Intro) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s;
+        }
+        .story-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 85%;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+            animation: floatIn 0.5s ease;
+            color: var(--text-primary);
+        }
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(40px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .story-text {
+            font-size: 1.6rem;
+            margin: 1.5rem 0;
+            font-weight: 600;
+            min-height: 100px;
+        }
+        .story-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .story-btn {
+            background: var(--accent);
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 40px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .story-btn.secondary {
+            background: rgba(100,100,130,0.7);
+        }
+        .story-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* sections */
+        .section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.8rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.4s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--accent);
+            padding-left: 1rem;
+            font-weight: 700;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.8rem;
+        }
+        .project-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.1);
+        }
+        .project-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .project-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .project-desc {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin: 0.5rem 0;
+        }
+        .project-link {
+            display: inline-block;
+            margin-top: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Contact info row */
+        .contact-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            justify-content: space-between;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(0,0,0,0.3);
+            padding: 0.6rem 1.2rem;
+            border-radius: 60px;
+            transition: 0.2s;
+        }
+        .contact-item:hover {
+            background: var(--accent);
+            transform: scale(1.02);
+        }
+        .contact-item a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+        .send-btn {
+            background: var(--accent);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 3rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #10b981;
+            padding: 1rem 1.8rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            z-index: 2000;
+            animation: fadeUp 0.3s;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .section-title { font-size: 1.6rem; }
+            .story-text { font-size: 1.2rem; }
+            .contact-row { flex-direction: column; }
+            .mode-bar { justify-content: center; }
+            .custom-cursor { display: none; }
+            body { cursor: auto; }
+        }
+        footer {
+            text-align: center;
+            padding: 2rem 0 1rem;
+            opacity: 0.7;
+        }
+    </style>
+    <!-- Import fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="custom-cursor" id="customCursor"></div>
+<div id="root"></div>
+
+<!-- Include React and libraries via CDN for simplicity but we'll write React code inline? Actually we need to embed React app in this html using script tags with JSX. 
+    But to keep full portability, I'll write vanilla React with Babel standalone? Not robust. Better use build? But we will use React + Three.js using CDNs? 
+    The requirement expects full stack developer, we need to produce single HTML that works? It's easier to use inline React via script with type="module". I'll use Vite-like setup but here we will write a complete React app using CDN imports and createRoot. However for Three.js + React Three Fiber, better to use ES modules. I'll write inline script as module and mount React. -->
+<script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "three": "https://esm.sh/three@0.128.0",
+            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.12",
+            "@react-three/drei": "https://esm.sh/@react-three/drei@9.92.7",
+            "react-icons/fa": "https://esm.sh/react-icons@5.0.1/fa"
+        }
+    }
+</script>
+
+<script type="module">
+    import React, { useState, useEffect, useRef, useContext, createContext, useCallback } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import * as THREE from 'three';
+    import { Canvas, useFrame, useThree } from '@react-three/fiber';
+    import { OrbitControls, Environment, Html } from '@react-three/drei';
+    import { FaGithub, FaTelegram, FaInstagram, FaPhone, FaEnvelope, FaMapMarkerAlt, FaGlobe, FaRobot } from 'react-icons/fa';
+
+    // ----- Context for Theme & Mode -----
+    const ThemeContext = createContext();
+
+    // ----- Character Component with eye tracking & clothing -----
+    const Character = ({ mode }) => {
+        const groupRef = useRef();
+        const leftEyeRef = useRef();
+        const rightEyeRef = useRef();
+        const { camera, gl } = useThree();
+        const mousePos = useRef({ x: 0, y: 0 });
+        
+        // Clothing colors based on mode
+        let shirtColor = '#3b82f6';
+        let pantsColor = '#1e293b';
+        let skinColor = '#f7c59f';
+        if (mode === 'evening') {
+            shirtColor = '#a855f7';
+            pantsColor = '#2d1b3e';
+            skinColor = '#e2b78b';
+        } else if (mode === 'day') {
+            shirtColor = '#60a5fa';
+            pantsColor = '#334155';
+        }
+        
+        useEffect(() => {
+            const handleMouseMove = (event) => {
+                // Normalize mouse coordinates for eye rotation (-1 to 1)
+                const x = (event.clientX / window.innerWidth) * 2 - 1;
+                const y = (event.clientY / window.innerHeight) * 2 - 1;
+                mousePos.current = { x, y };
+            };
+            window.addEventListener('mousemove', handleMouseMove);
+            return () => window.removeEventListener('mousemove', handleMouseMove);
+        }, []);
+        
+        useFrame(() => {
+            if (groupRef.current && leftEyeRef.current && rightEyeRef.current) {
+                // eyes follow cursor smoothly
+                const targetYaw = mousePos.current.x * 0.6;
+                const targetPitch = Math.min(0.4, Math.max(-0.3, mousePos.current.y * 0.4));
+                leftEyeRef.current.rotation.y = targetYaw;
+                leftEyeRef.current.rotation.x = targetPitch;
+                rightEyeRef.current.rotation.y = targetYaw;
+                rightEyeRef.current.rotation.x = targetPitch;
+                // Idle bounce
+                groupRef.current.position.y = Math.sin(Date.now() * 0.003) * 0.02;
+            }
+        });
+        
+        return (
+            <group ref={groupRef} position={[0, -0.8, 0]} scale={1.2}>
+                {/* Body */}
+                <mesh castShadow receiveShadow position={[0, 0.3, 0]}>
+                    <cylinderGeometry args={[0.45, 0.4, 1.1, 12]} />
+                    <meshStandardMaterial color={shirtColor} roughness={0.3} metalness={0.1} />
+                </mesh>
+                {/* Pants */}
+                <mesh position={[0, -0.3, 0]}>
+                    <cylinderGeometry args={[0.4, 0.35, 0.6, 12]} />
+                    <meshStandardMaterial color={pantsColor} />
+                </mesh>
+                {/* Head */}
+                <mesh position={[0, 0.95, 0]}>
+                    <sphereGeometry args={[0.45, 32, 32]} />
+                    <meshStandardMaterial color={skinColor} roughness={0.2} />
+                </mesh>
+                {/* Hair */}
+                <mesh position={[0, 1.22, 0.15]}>
+                    <sphereGeometry args={[0.48, 16, 16]} />
+                    <meshStandardMaterial color="#2c1e0f" />
+                </mesh>
+                {/* Left Eye Group */}
+                <group ref={leftEyeRef} position={[-0.18, 1.05, 0.45]}>
+                    <mesh>
+                        <sphereGeometry args={[0.12, 24, 24]} />
+                        <meshStandardMaterial color="white" />
+                    </mesh>
+                    <mesh position={[0.05, 0.03, 0.12]}>
+                        <sphereGeometry args={[0.06, 24, 24]} />
+                        <meshStandardMaterial color="#111" />
+                    </mesh>
+                    <mesh position={[0.03, 0.07, 0.14]}>
+                        <sphereGeometry args={[0.02, 16, 16]} />
+                        <meshStandardMaterial color="white" />
+                    </mesh>
+                </group>
+                {/* Right Eye Group */}
+                <group ref={rightEyeRef} position={[0.18, 1.05, 0.45]}>
+                    <mesh>
+                        <sphereGeometry args={[0.12, 24, 24]} />
+                        <meshStandardMaterial color="white" />
+                    </mesh>
+                    <mesh position={[0.05, 0.03, 0.12]}>
+                        <sphereGeometry args={[0.06, 24, 24]} />
+                        <meshStandardMaterial color="#111" />
+                    </mesh>
+                    <mesh position={[0.03, 0.07, 0.14]}>
+                        <sphereGeometry args={[0.02, 16, 16]} />
+                        <meshStandardMaterial color="white" />
+                    </mesh>
+                </group>
+                {/* Arms */}
+                <mesh position={[-0.55, 0.7, 0]} rotation={[0, 0, -0.4]}>
+                    <cylinderGeometry args={[0.12, 0.1, 0.8, 8]} />
+                    <meshStandardMaterial color={shirtColor} />
+                </mesh>
+                <mesh position={[0.55, 0.7, 0]} rotation={[0, 0, 0.4]}>
+                    <cylinderGeometry args={[0.12, 0.1, 0.8, 8]} />
+                    <meshStandardMaterial color={shirtColor} />
+                </mesh>
+                {/* Glasses effect */}
+                <mesh position={[-0.18, 1.05, 0.52]}>
+                    <torusGeometry args={[0.14, 0.03, 16, 40]} />
+                    <meshStandardMaterial color="#333" metalness={0.7} />
+                </mesh>
+                <mesh position={[0.18, 1.05, 0.52]}>
+                    <torusGeometry args={[0.14, 0.03, 16, 40]} />
+                    <meshStandardMaterial color="#333" metalness={0.7} />
+                </mesh>
+            </group>
+        );
+    };
+
+    // 3D Scene Background
+    const Scene3D = ({ mode }) => {
+        const ambientIntensity = mode === 'day' ? 0.7 : mode === 'evening' ? 0.4 : 0.55;
+        const dirLightIntensity = mode === 'day' ? 1.2 : mode === 'evening' ? 0.6 : 0.9;
+        const bgColor = mode === 'day' ? '#bae6fd' : mode === 'evening' ? '#2e1065' : '#0f172a';
+        return (
+            <>
+                <color attach="background" args={[bgColor]} />
+                <ambientLight intensity={ambientIntensity} />
+                <directionalLight position={[5, 8, 4]} intensity={dirLightIntensity} castShadow />
+                <pointLight position={[-2, 3, 4]} intensity={0.5} />
+                <Character mode={mode} />
+                <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} target={[0,0.5,0]} />
+            </>
+        );
+    };
+
+    // ----- Main App -----
+    const App = () => {
+        const [mode, setMode] = useState('auto');
+        const [showIntro, setShowIntro] = useState(true);
+        const [storyStep, setStoryStep] = useState(0);
+        const [toast, setToast] = useState(null);
+        
+        const storyData = [
+            { text: "👋 Salom! Mening ismim Qurbonali Ergashev" },
+            { text: "💻 Men Full Stack dasturchiman: Frontend (React, Three.js) va Backend (Python, Django, AI)" },
+            { text: "🎂 Yoshim 16 yoshda, 2010-yil 3-noyabrda tug'ilganman" },
+            { text: "📍 Manzil: O‘zbekiston, Farg‘ona, So‘x tumani, Qizilqiyoq MFY" },
+            { text: "📞 Aloqa: Telegram, Instagram, GitHub va +998 99 033 59 41" }
+        ];
+        
+        useEffect(() => {
+            // auto mode detection
+            if (mode === 'auto') {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const newTheme = prefersDark ? 'evening' : 'day';
+                document.body.className = newTheme === 'day' ? 'day-mode' : 'evening-mode';
+            } else {
+                document.body.className = mode === 'day' ? 'day-mode' : 'evening-mode';
+            }
+        }, [mode]);
+        
+        const handleModeChange = (newMode) => {
+            setMode(newMode);
+        };
+        
+        const nextStep = () => {
+            if (storyStep + 1 < storyData.length) setStoryStep(storyStep + 1);
+            else setShowIntro(false);
+        };
+        const prevStep = () => { if (storyStep > 0) setStoryStep(storyStep - 1); };
+        
+        const showToast = (msg) => {
+            setToast(msg);
+            setTimeout(() => setToast(null), 3500);
+        };
+        
+        const handleSendMessage = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const name = form.name.value;
+            const email = form.email.value;
+            const message = form.message.value;
+            if (!name || !email || !message) {
+                showToast("Iltimos, barcha maydonlarni to'ldiring!");
+                return;
+            }
+            // Use formsubmit.co to actually email
+            try {
+                const res = await fetch('https://formsubmit.co/ajax/qurbonaliergashev0@gmail.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, message, _subject: "Portfolio saytidan xabar!" })
+                });
+                if (res.ok) {
+                    showToast("✅ Xabar muvaffaqiyatli yuborildi! Tez orada javob olasiz.");
+                    form.reset();
+                } else {
+                    showToast("Xatolik, qaytadan urinib ko'ring.");
+                }
+            } catch (err) {
+                showToast("Tarmoq xatosi, keyinroq urunib ko'ring.");
+            }
+        };
+        
+        const projects = [
+            { name: "Qizilqiyoq MFY", desc: "Mahalla sayti, React & Bootstrap", link: "https://qizilqiyoq.netlify.app/", icon: "🌐" },
+            { name: "Umar All Forukh Bot", desc: "Telegram bot (Python)", link: "https://t.me/Umar_all_ForukhBot", icon: "🤖" },
+            { name: "Word Checker Bot", desc: "So'z tekshiruvchi AI bot", link: "https://t.me/Word_checker_bot", icon: "📝" },
+            { name: "AI Vision Studio", desc: "Sun'iy intellekt loyihasi", link: "#", icon: "🧠" },
+            { name: "3D Portfolio", desc: "Three.js bilan interaktiv", link: "#", icon: "🎨" },
+            { name: "E-commerce Backend", desc: "Django REST API", link: "#", icon: "🛒" }
+        ];
+        
+        return (
+            <ThemeContext.Provider value={{ mode, setMode }}>
+                <div style={{ position: 'relative', minHeight: '100vh' }}>
+                    {/* Canvas 3D */}
+                    <div className="canvas-container">
+                        <Canvas shadows camera={{ position: [0, 1.2, 4], fov: 45 }}>
+                            <Scene3D mode={mode === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'evening' : 'day') : mode} />
+                        </Canvas>
+                    </div>
+                    
+                    <div className="content">
+                        <div className="container">
+                            <div className="mode-bar">
+                                <button className="mode-btn" onClick={() => handleModeChange('day')}>☀️ Kunduzgi</button>
+                                <button className="mode-btn" onClick={() => handleModeChange('evening')}>🌙 Tungi</button>
+                                <button className="mode-btn" onClick={() => handleModeChange('auto')}>🔄 Avto (qurilmaga mos)</button>
+                            </div>
+                            
+                            {/* Info sections, projects, contact */}
+                            <div className="section">
+                                <div className="section-title">📖 Mening hikoyam</div>
+                                <p style={{ fontSize: '1.2rem' }}>⭐ Full Stack dasturchi, 16 yoshda. Django, AI, Telegram botlari va 3D web texnologiyalari bo'yicha tajriba.</p>
+                                <p>🔥 Hozirda o'z loyihalarim ustida ishlayman va yangi texnologiyalarni o'rganaman.</p>
+                            </div>
+                            
+                            <div className="section">
+                                <div className="section-title">🚀 Loyihalar</div>
+                                <div className="projects-grid">
+                                    {projects.map((proj, idx) => (
+                                        <div className="project-card" key={idx}>
+                                            <div className="project-icon">{proj.icon}</div>
+                                            <div className="project-title">{proj.name}</div>
+                                            <div className="project-desc">{proj.desc}</div>
+                                            <a href={proj.link} target="_blank" rel="noopener noreferrer" className="project-link">Ko'rish →</a>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div className="section">
+                                <div className="section-title">📞 Bog'lanish va ijtimoiy tarmoqlar</div>
+                                <div className="contact-row">
+                                    <div className="contact-item"><FaTelegram /> <a href="https://t.me/Hello0102Q1" target="_blank">Telegram</a></div>
+                                    <div className="contact-item"><FaInstagram /> <a href="https://instagram.com/ergashev_qurbonali_10" target="_blank">Instagram</a></div>
+                                    <div className="contact-item"><FaGithub /> <a href="https://github.com/qurbonaliergashev36-ui" target="_blank">GitHub</a></div>
+                                    <div className="contact-item"><FaPhone /> +998 99 033 59 41</div>
+                                    <div className="contact-item"><FaEnvelope /> qurbonaliergashev0@gmail.com</div>
+                                    <div className="contact-item"><FaMapMarkerAlt /> <a href="https://maps.app.goo.gl/egC8aEMwkD4W1AQE8" target="_blank">Google Mapsda ochish</a></div>
+                                </div>
+                            </div>
+                            
+                            <div className="section">
+                                <div className="section-title">✍️ Menga yozing</div>
+                                <form onSubmit={handleSendMessage}>
+                                    <div className="form-group"><input type="text" name="name" placeholder="Ismingiz" required /></div>
+                                    <div className="form-group"><input type="email" name="email" placeholder="Email manzilingiz" required /></div>
+                                    <div className="form-group"><textarea name="message" rows="4" placeholder="Xabaringiz..." required></textarea></div>
+                                    <button type="submit" className="send-btn">📨 Yuborish</button>
+                                </form>
+                            </div>
+                            <footer>© 2025 Qurbonali Ergashev | Full Stack Developer | 3D Portfolio</footer>
+                        </div>
+                    </div>
+                    
+                    {showIntro && (
+                        <div className="modal-overlay">
+                            <div className="story-card">
+                                <div className="story-text">{storyData[storyStep].text}</div>
+                                <div className="story-buttons">
+                                    {storyStep > 0 && <button className="story-btn secondary" onClick={prevStep}>⬅ Oldingi</button>}
+                                    <button className="story-btn" onClick={nextStep}>{storyStep === storyData.length-1 ? "🚪 Kirish" : "Keyingi ➡"}</button>
+                                </div>
+                                <small style={{display:'block', marginTop:'1rem'}}>3D personaj ko'zlar bilan sizni kuzatib turadi 👀</small>
+                            </div>
+                        </div>
+                    )}
+                    {toast && <div className="toast-msg">{toast}</div>}
+                </div>
+            </ThemeContext.Provider>
+        );
+    };
+    
+    // Mount React
+    const rootElement = document.getElementById('root');
+    const root = createRoot(rootElement);
+    root.render(<App />);
+    
+    // Custom cursor logic
+    const cursor = document.getElementById('customCursor');
+    document.addEventListener('mousemove', (e) => {
+        if (cursor) {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        }
+    });
+    const interactiveElements = document.querySelectorAll('button, a, input, textarea, .project-card, .contact-item');
+    const addHover = () => cursor?.classList.add('hover');
+    const removeHover = () => cursor?.classList.remove('hover');
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('button, a, input, textarea, .project-card, .contact-item, .mode-btn').forEach(el => {
+            el.addEventListener('mouseenter', addHover);
+            el.addEventListener('mouseleave', removeHover);
+        });
+    });
+    // watch for dynamic elements
+    const observer = new MutationObserver(() => {
+        document.querySelectorAll('button, a, input, textarea, .project-card, .contact-item, .mode-btn').forEach(el => {
+            el.removeEventListener('mouseenter', addHover);
+            el.removeEventListener('mouseleave', removeHover);
+            el.addEventListener('mouseenter', addHover);
+            el.addEventListener('mouseleave', removeHover);
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+</script>
+</body>
+</html>
