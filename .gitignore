@@ -2,6 +2,9 @@
 __pycache__/
 *.py[codz]
 *$py.class
+# JSON files
+tests.json
+Users_Name.json
 
 # C extensions
 *.so
